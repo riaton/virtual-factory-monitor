@@ -1,0 +1,3 @@
+influxdb-client
+boto3
+# TODO(Phase3): バージョン固定

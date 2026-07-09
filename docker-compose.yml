@@ -1,0 +1,74 @@
+# 常駐: sensor×3 / bridge / influxdb / grafana
+# 都度起動: docker compose run chat  (profiles で通常の up から除外)
+services:
+  sensor-temperature:
+    build: ./simulator
+    environment:
+      SENSOR_ID: sensor-temp-01
+      EQUIPMENT_ID: machine-01
+      MEASURE: temperature
+      # TODO(Phase1): IOT_ENDPOINT / 証明書パス / 周期 / 故障モード設定
+    volumes:
+      - ./certs/sensor-temp-01:/certs:ro
+
+  sensor-vibration:
+    build: ./simulator
+    environment:
+      SENSOR_ID: sensor-vib-01
+      EQUIPMENT_ID: machine-01
+      MEASURE: vibration_rms
+    volumes:
+      - ./certs/sensor-vib-01:/certs:ro
+
+  sensor-status:
+    build: ./simulator
+    environment:
+      SENSOR_ID: sensor-status-01
+      EQUIPMENT_ID: machine-01
+      MEASURE: machine_state
+    volumes:
+      - ./certs/sensor-status-01:/certs:ro
+
+  bridge:
+    build: ./bridge
+    environment:
+      # TODO(Phase1): IOT_ENDPOINT / 購読トピック / InfluxDB接続情報
+      INFLUX_URL: http://influxdb:8086
+    volumes:
+      - ./certs/bridge-01:/certs:ro
+    depends_on:
+      - influxdb
+
+  influxdb:
+    image: influxdb:2.7
+    ports:
+      - "8086:8086"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_ORG: virtual-factory
+      DOCKER_INFLUXDB_INIT_BUCKET: sensor_data
+      DOCKER_INFLUXDB_INIT_RETENTION: 30d
+      # TODO(Phase1): 初期ユーザー/トークンは .env から注入 (コミットしない)
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - influxdb
+
+  chat:
+    build: ./cli
+    profiles: ["tools"]
+    environment:
+      INFLUX_URL: http://influxdb:8086
+      # TODO(Phase3): Bedrock リージョン / AWS認証情報の渡し方
+    depends_on:
+      - influxdb
+
+volumes:
+  influxdb-data:

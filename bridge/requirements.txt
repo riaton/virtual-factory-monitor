@@ -1,0 +1,3 @@
+awsiotsdk
+influxdb-client
+# TODO(Phase1): バージョン固定

@@ -1,0 +1,2 @@
+awsiotsdk
+# TODO(Phase1): バージョン固定

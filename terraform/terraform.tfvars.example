@@ -1,0 +1,2 @@
+# terraform.tfvars にコピーして使う (terraform.tfvars は .gitignore 済み)
+region = "ap-northeast-1"

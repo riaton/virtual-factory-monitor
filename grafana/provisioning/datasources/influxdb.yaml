@@ -1,0 +1,11 @@
+apiVersion: 1
+datasources:
+  - name: InfluxDB
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    jsonData:
+      version: Flux
+      organization: virtual-factory
+      defaultBucket: sensor_data
+    # TODO(Phase1): トークンは secureJsonData + 環境変数で注入 (コミットしない)
