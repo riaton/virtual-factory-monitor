@@ -228,3 +228,6 @@ terraform.tfvars
 *.crt
 *.key
 certs/
+
+# Others
+.serena/
