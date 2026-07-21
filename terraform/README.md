@@ -16,17 +16,21 @@ terraform apply
 1. AWS コンソール → IoT Core → MQTT テストクライアント → トピック `vf/#` を購読
 2. 手元から 1 メッセージ送る (mosquitto_pub の例):
 ```bash
-source ../.env
-mosquitto_pub \
-  --cafile ../certs/sensor-temp-01/AmazonRootCA1.pem \
-  --cert   ../certs/sensor-temp-01/certificate.pem \
-  --key    ../certs/sensor-temp-01/private.key \
-  -h "$IOT_ENDPOINT" -p 8883 \
-  -i sensor-temp-01 \
-  -t vf/machine-01/sensor-temp-01 \
-  -m '{"hello":"vf"}'
+# リポジトリのルートで実行
+source .env
+docker run --rm \
+  -v "$PWD/certs/sensor-temp-01:/certs:ro" \
+  eclipse-mosquitto \
+  mosquitto_pub \
+    --cafile /certs/AmazonRootCA1.pem \
+    --cert   /certs/certificate.pem \
+    --key    /certs/private.key \
+    -h "$IOT_ENDPOINT" -p 8883 \
+    -i sensor-temp-01 \
+    -t vf/machine-01/sensor-temp-01 \
+    -m '{"hello":"vf"}'
 ```
-3. コンソールの購読画面にメッセージが表示されたら疎通完了
+3. コンソールの購読画面にメッセージが表示されたら疎通完了(コンソールのリージョンが東京であることを確認)
 
 ### 検証ポイント (ポリシーの縛りが効いていることの確認)
 - `-i` を `sensor-temp-01` 以外にすると**接続拒否**される (クライアント ID = Thing 名の縛り)
